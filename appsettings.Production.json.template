@@ -1,0 +1,37 @@
+{
+  "ConnectionStrings": {
+    "DefaultConnection": "Server=YOUR_DB_HOST;Database=LMSPlatform;User=YOUR_DB_USER;Password=YOUR_DB_PASSWORD;Port=3306;AllowUserVariables=true;"
+  },
+  "App": {
+    "BaseUrl": "https://your-domain.com"
+  },
+  "Email": {
+    "SmtpHost": "smtp.gmail.com",
+    "SmtpPort": "587",
+    "SmtpUser": "your-email@gmail.com",
+    "SmtpPassword": "your-app-password",
+    "FromEmail": "noreply@your-domain.com",
+    "FromName": "LMS Platform"
+  },
+  "AWS": {
+    "Region": "ap-southeast-1",
+    "BucketName": "your-s3-bucket-name",
+    "AccessKey": "YOUR_AWS_ACCESS_KEY",
+    "SecretKey": "YOUR_AWS_SECRET_KEY"
+  },
+  "KBZPay": {
+    "MerchantId": "YOUR_KBZ_MERCHANT_ID",
+    "ApiKey": "YOUR_KBZ_API_KEY",
+    "ApiSecret": "YOUR_KBZ_API_SECRET",
+    "BaseUrl": "https://api.kbzpay.com",
+    "ReturnUrl": "https://your-domain.com/Payment/Return",
+    "NotifyUrl": "https://your-domain.com/Payment/Notify"
+  },
+  "Logging": {
+    "LogLevel": {
+      "Default": "Warning",
+      "Microsoft.AspNetCore": "Warning"
+    }
+  },
+  "AllowedHosts": "*"
+}
