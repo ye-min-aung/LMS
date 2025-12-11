@@ -1,0 +1,83 @@
+@page "/Payment/Checkout/{courseId:int}"
+@model LMSPlatform.Pages.Payment.CheckoutModel
+@{
+    ViewData["Title"] = "Checkout";
+}
+
+<div class="page-header">
+    <div class="container">
+        <h1><i class="fas fa-shopping-cart me-3"></i>Checkout</h1>
+        <p class="mb-0">Complete your enrollment</p>
+    </div>
+</div>
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            @if (Model.Course != null)
+            {
+                <div class="row">
+                    <div class="col-md-7">
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h5 class="mb-0"><i class="fas fa-book me-2"></i>Course Details</h5>
+                            </div>
+                            <div class="card-body">
+                                <h4>@Model.Course.GetTitle()</h4>
+                                <p class="text-muted">@Model.Course.GetDescription()</p>
+                                <ul class="list-unstyled">
+                                    <li><i class="fas fa-layer-group text-primary me-2"></i>@Model.Course.Modules.Count Modules</li>
+                                    <li><i class="fas fa-play-circle text-primary me-2"></i>@Model.TotalLessons Lessons</li>
+                                    <li><i class="fas fa-certificate text-primary me-2"></i>Certificate on completion</li>
+                                    <li><i class="fas fa-infinity text-primary me-2"></i>Lifetime access</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-5">
+                        <div class="card checkout-summary">
+                            <div class="card-header">
+                                <h5 class="mb-0"><i class="fas fa-receipt me-2"></i>Order Summary</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between mb-3">
+                                    <span>Course Price</span>
+                                    <strong>@Model.Course.Price.ToString("N0") MMK</strong>
+                                </div>
+                                <hr>
+                                <div class="d-flex justify-content-between mb-4">
+                                    <span class="h5">Total</span>
+                                    <span class="h5 text-primary">@Model.Course.Price.ToString("N0") MMK</span>
+                                </div>
+                                
+                                <form method="post">
+                                    <input type="hidden" name="courseId" value="@Model.Course.CourseID" />
+                                    <button type="submit" class="btn btn-primary btn-lg w-100">
+                                        <i class="fas fa-credit-card me-2"></i>Pay with KBZ Pay
+                                    </button>
+                                </form>
+                                
+                                <div class="text-center mt-3">
+                                    <small class="text-muted">
+                                        <i class="fas fa-lock me-1"></i>Secure payment powered by KBZ Pay
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-warning">Course not found</div>
+            }
+        </div>
+    </div>
+</div>
+
+<style>
+.checkout-summary {
+    position: sticky;
+    top: 100px;
+}
+</style>

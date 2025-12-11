@@ -1,0 +1,210 @@
+@page
+@model LMSPlatform.Pages.Admin.DashboardModel
+@{
+    ViewData["Title"] = "Admin Dashboard";
+}
+
+<div class="page-header">
+    <div class="container">
+        <h1><i class="fas fa-tachometer-alt me-3"></i>Admin Dashboard</h1>
+        <p class="mb-0">System overview and management</p>
+    </div>
+</div>
+
+<div class="container">
+    <!-- Stats Cards -->
+    <div class="dashboard-stats">
+        <div class="stat-card">
+            <div class="stat-icon primary">
+                <i class="fas fa-users"></i>
+            </div>
+            <div class="stat-info">
+                <h3>@Model.TotalUsers</h3>
+                <p>Total Users</p>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon secondary">
+                <i class="fas fa-book-open"></i>
+            </div>
+            <div class="stat-info">
+                <h3>@Model.TotalCourses</h3>
+                <p>Courses</p>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon success">
+                <i class="fas fa-user-graduate"></i>
+            </div>
+            <div class="stat-info">
+                <h3>@Model.TotalEnrollments</h3>
+                <p>Enrollments</p>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon warning">
+                <i class="fas fa-certificate"></i>
+            </div>
+            <div class="stat-info">
+                <h3>@Model.TotalCertificates</h3>
+                <p>Certificates</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Second Row Stats -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-tasks fa-2x text-warning mb-3"></i>
+                    <h3 class="mb-1">@Model.PendingAssignments</h3>
+                    <p class="text-muted mb-0">Pending Reviews</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-user-check fa-2x text-success mb-3"></i>
+                    <h3 class="mb-1">@Model.ActiveStudents</h3>
+                    <p class="text-muted mb-0">Active Students</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-money-bill-wave fa-2x text-primary mb-3"></i>
+                    <h3 class="mb-1">@Model.TotalRevenue.ToString("N0") MMK</h3>
+                    <p class="text-muted mb-0">Total Revenue</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Quick Actions -->
+        <div class="col-lg-4">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-bolt me-2"></i>Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="/Admin/Courses/Create" class="btn btn-primary">
+                            <i class="fas fa-plus me-2"></i>Add New Course
+                        </a>
+                        <a href="/Admin/Users" class="btn btn-outline-primary">
+                            <i class="fas fa-users me-2"></i>Manage Users
+                        </a>
+                        <a href="/Admin/Courses" class="btn btn-outline-primary">
+                            <i class="fas fa-book me-2"></i>Manage Courses
+                        </a>
+                        <a href="/Admin/Assignments" class="btn btn-outline-warning">
+                            <i class="fas fa-tasks me-2"></i>Review Assignments
+                            @if (Model.PendingAssignments > 0)
+                            {
+                                <span class="badge bg-danger ms-2">@Model.PendingAssignments</span>
+                            }
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Enrollments -->
+        <div class="col-lg-8">
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="fas fa-user-plus me-2"></i>Recent Enrollments</h5>
+                    <a href="/Admin/Enrollments" class="btn btn-sm btn-outline-primary">View All</a>
+                </div>
+                <div class="card-body p-0">
+                    @if (Model.RecentEnrollments.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>Student</th>
+                                        <th>Course</th>
+                                        <th>Date</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var enrollment in Model.RecentEnrollments)
+                                    {
+                                        <tr>
+                                            <td>@enrollment.User?.FullName</td>
+                                            <td>@enrollment.Course?.GetTitle()</td>
+                                            <td>@enrollment.EnrollmentDate.ToString("MMM dd")</td>
+                                            <td>
+                                                <span class="badge @(enrollment.Status == LMSPlatform.Models.EnrollmentStatus.Approved ? "bg-success" : "bg-secondary")">
+                                                    @enrollment.Status
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-4">
+                            <p class="text-muted mb-0">No recent enrollments</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Users -->
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0"><i class="fas fa-user-clock me-2"></i>Recent Users</h5>
+            <a href="/Admin/Users" class="btn btn-sm btn-outline-primary">View All</a>
+        </div>
+        <div class="card-body p-0">
+            @if (Model.RecentUsers.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Role</th>
+                                <th>Joined</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var user in Model.RecentUsers)
+                            {
+                                <tr>
+                                    <td>@user.FullName</td>
+                                    <td>@user.Email</td>
+                                    <td>
+                                        <span class="badge @(user.Role == "Admin" ? "bg-danger" : "bg-primary")">
+                                            @user.Role
+                                        </span>
+                                    </td>
+                                    <td>@user.CreatedAt.ToString("MMM dd, yyyy")</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="text-center py-4">
+                    <p class="text-muted mb-0">No recent users</p>
+                </div>
+            }
+        </div>
+    </div>
+</div>

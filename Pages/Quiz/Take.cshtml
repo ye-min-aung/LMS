@@ -1,0 +1,380 @@
+@page "/quiz/{quizId:int}/take"
+@model TakeModel
+@{
+    ViewData["Title"] = Model.Quiz?.Title ?? "Take Quiz";
+}
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <!-- Quiz Header -->
+            <div class="quiz-container fade-in-up">
+                <div class="quiz-header text-center mb-4">
+                    <h2 class="mb-3">@Model.Quiz?.Title</h2>
+                    @if (!string.IsNullOrEmpty(Model.Quiz?.Instructions))
+                    {
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle"></i>
+                            @Model.Quiz.Instructions
+                        </div>
+                    }
+                    
+                    <div class="quiz-info d-flex justify-content-center gap-4 mb-4">
+                        <div class="info-item">
+                            <i class="fas fa-question-circle text-primary"></i>
+                            <span>@Model.Quiz?.Questions.Count Questions</span>
+                        </div>
+                        <div class="info-item">
+                            <i class="fas fa-clock text-warning"></i>
+                            <span id="timer">No time limit</span>
+                        </div>
+                        <div class="info-item">
+                            <i class="fas fa-trophy text-success"></i>
+                            <span>@Model.Quiz?.PassingScore% to pass</span>
+                        </div>
+                        <div class="info-item">
+                            <i class="fas fa-redo text-info"></i>
+                            <span>@Model.RemainingAttempts attempts left</span>
+                        </div>
+                    </div>
+                </div>
+
+                @if (Model.Quiz != null && Model.Quiz.Questions.Any())
+                {
+                    <form id="quizForm" method="post">
+                        <input type="hidden" name="AttemptId" value="@Model.AttemptId" />
+                        
+                        <!-- Progress Bar -->
+                        <div class="quiz-progress mb-4">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="text-muted">Progress</span>
+                                <span class="text-muted"><span id="currentQuestion">1</span> of @Model.Quiz.Questions.Count</span>
+                            </div>
+                            <div class="progress">
+                                <div id="progressBar" class="progress-bar" role="progressbar" style="width: @(100.0 / Model.Quiz.Questions.Count)%"></div>
+                            </div>
+                        </div>
+
+                        <!-- Questions -->
+                        @for (int i = 0; i < Model.Quiz.Questions.Count; i++)
+                        {
+                            var question = Model.Quiz.Questions.ElementAt(i);
+                            <div class="quiz-question @(i == 0 ? "active" : "")" data-question="@(i + 1)">
+                                <div class="question-header d-flex justify-content-between align-items-center mb-3">
+                                    <h5 class="mb-0">Question @(i + 1)</h5>
+                                    <span class="badge bg-primary">@question.Points points</span>
+                                </div>
+                                
+                                <div class="question-text mb-4">
+                                    <p class="lead">@question.QuestionText</p>
+                                </div>
+                                
+                                <div class="answer-choices">
+                                    @foreach (var choice in question.AnswerChoices.OrderBy(ac => ac.ChoiceOrder))
+                                    {
+                                        <div class="quiz-option" data-choice-id="@choice.ChoiceID">
+                                            <label class="d-flex align-items-center cursor-pointer">
+                                                <input type="radio" 
+                                                       name="Question_@question.QuestionID" 
+                                                       value="@choice.ChoiceID" 
+                                                       class="me-3" 
+                                                       style="transform: scale(1.2);">
+                                                <span class="choice-text">@choice.ChoiceText</span>
+                                            </label>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        }
+
+                        <!-- Navigation -->
+                        <div class="quiz-navigation d-flex justify-content-between align-items-center mt-4">
+                            <button type="button" id="prevBtn" class="btn btn-outline-secondary" disabled>
+                                <i class="fas fa-chevron-left"></i> Previous
+                            </button>
+                            
+                            <div class="question-indicators">
+                                @for (int i = 0; i < Model.Quiz.Questions.Count; i++)
+                                {
+                                    <button type="button" class="btn btn-sm btn-outline-primary question-indicator @(i == 0 ? "active" : "")" data-question="@(i + 1)">
+                                        @(i + 1)
+                                    </button>
+                                }
+                            </div>
+                            
+                            <button type="button" id="nextBtn" class="btn btn-primary">
+                                Next <i class="fas fa-chevron-right"></i>
+                            </button>
+                            
+                            <button type="submit" id="submitBtn" class="btn btn-success" style="display: none;">
+                                <i class="fas fa-check"></i> Submit Quiz
+                            </button>
+                        </div>
+                    </form>
+                }
+                else
+                {
+                    <div class="alert alert-warning text-center">
+                        <i class="fas fa-exclamation-triangle fa-2x mb-3"></i>
+                        <h5>No Questions Available</h5>
+                        <p>This quiz doesn't have any questions yet.</p>
+                        <a href="/lessons/@Model.Quiz?.LessonID/watch" class="btn btn-primary">Return to Lesson</a>
+                    </div>
+                }
+            </div>
+
+            <!-- Quiz Summary (Hidden initially) -->
+            <div id="quizSummary" class="quiz-container" style="display: none;">
+                <div class="text-center">
+                    <h3 class="mb-4">Review Your Answers</h3>
+                    <p class="text-muted mb-4">Please review your answers before submitting the quiz.</p>
+                    
+                    <div id="summaryContent" class="text-start">
+                        <!-- Summary will be populated by JavaScript -->
+                    </div>
+                    
+                    <div class="mt-4">
+                        <button type="button" id="backToQuiz" class="btn btn-outline-secondary me-3">
+                            <i class="fas fa-edit"></i> Edit Answers
+                        </button>
+                        <button type="button" id="finalSubmit" class="btn btn-success">
+                            <i class="fas fa-paper-plane"></i> Submit Final Answers
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        let currentQuestion = 1;
+        const totalQuestions = @Model.Quiz?.Questions.Count ?? 0;
+        let startTime = new Date();
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeQuiz();
+            updateProgress();
+            
+            // Timer (optional - can be enabled if needed)
+            // startTimer();
+        });
+        
+        function initializeQuiz() {
+            // Navigation buttons
+            document.getElementById('prevBtn').addEventListener('click', previousQuestion);
+            document.getElementById('nextBtn').addEventListener('click', nextQuestion);
+            document.getElementById('submitBtn').addEventListener('click', showSummary);
+            
+            // Question indicators
+            document.querySelectorAll('.question-indicator').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    goToQuestion(parseInt(this.dataset.question));
+                });
+            });
+            
+            // Answer selection
+            document.querySelectorAll('.quiz-option').forEach(option => {
+                option.addEventListener('click', function() {
+                    const radio = this.querySelector('input[type="radio"]');
+                    if (radio) {
+                        radio.checked = true;
+                        selectOption(this);
+                        updateQuestionIndicator();
+                    }
+                });
+            });
+            
+            // Form submission
+            document.getElementById('quizForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                submitQuiz();
+            });
+            
+            // Summary navigation
+            document.getElementById('backToQuiz').addEventListener('click', hideSummary);
+            document.getElementById('finalSubmit').addEventListener('click', submitQuiz);
+        }
+        
+        function previousQuestion() {
+            if (currentQuestion > 1) {
+                goToQuestion(currentQuestion - 1);
+            }
+        }
+        
+        function nextQuestion() {
+            if (currentQuestion < totalQuestions) {
+                goToQuestion(currentQuestion + 1);
+            } else {
+                showSummary();
+            }
+        }
+        
+        function goToQuestion(questionNum) {
+            // Hide current question
+            document.querySelector('.quiz-question.active').classList.remove('active');
+            document.querySelector('.question-indicator.active').classList.remove('active');
+            
+            // Show target question
+            document.querySelector(`[data-question="${questionNum}"]`).classList.add('active');
+            document.querySelector(`.question-indicator[data-question="${questionNum}"]`).classList.add('active');
+            
+            currentQuestion = questionNum;
+            updateProgress();
+            updateNavigationButtons();
+        }
+        
+        function updateProgress() {
+            const progress = (currentQuestion / totalQuestions) * 100;
+            document.getElementById('progressBar').style.width = progress + '%';
+            document.getElementById('currentQuestion').textContent = currentQuestion;
+        }
+        
+        function updateNavigationButtons() {
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            const submitBtn = document.getElementById('submitBtn');
+            
+            prevBtn.disabled = currentQuestion === 1;
+            
+            if (currentQuestion === totalQuestions) {
+                nextBtn.style.display = 'none';
+                submitBtn.style.display = 'inline-block';
+            } else {
+                nextBtn.style.display = 'inline-block';
+                submitBtn.style.display = 'none';
+            }
+        }
+        
+        function selectOption(optionElement) {
+            // Remove selection from other options in the same question
+            const questionDiv = optionElement.closest('.quiz-question');
+            questionDiv.querySelectorAll('.quiz-option').forEach(opt => {
+                opt.classList.remove('selected');
+            });
+            
+            // Add selection to clicked option
+            optionElement.classList.add('selected');
+        }
+        
+        function updateQuestionIndicator() {
+            const currentQuestionDiv = document.querySelector('.quiz-question.active');
+            const hasAnswer = currentQuestionDiv.querySelector('input[type="radio"]:checked');
+            const indicator = document.querySelector(`.question-indicator[data-question="${currentQuestion}"]`);
+            
+            if (hasAnswer) {
+                indicator.classList.remove('btn-outline-primary');
+                indicator.classList.add('btn-success');
+            } else {
+                indicator.classList.remove('btn-success');
+                indicator.classList.add('btn-outline-primary');
+            }
+        }
+        
+        function showSummary() {
+            const answers = collectAnswers();
+            const summaryContent = document.getElementById('summaryContent');
+            let summaryHtml = '';
+            
+            document.querySelectorAll('.quiz-question').forEach((questionDiv, index) => {
+                const questionText = questionDiv.querySelector('.question-text p').textContent;
+                const selectedRadio = questionDiv.querySelector('input[type="radio"]:checked');
+                const selectedText = selectedRadio ? 
+                    selectedRadio.closest('.quiz-option').querySelector('.choice-text').textContent : 
+                    'No answer selected';
+                
+                summaryHtml += `
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <h6 class="card-title">Question ${index + 1}</h6>
+                            <p class="card-text">${questionText}</p>
+                            <div class="alert ${selectedRadio ? 'alert-info' : 'alert-warning'}">
+                                <strong>Your answer:</strong> ${selectedText}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            summaryContent.innerHTML = summaryHtml;
+            
+            // Hide quiz, show summary
+            document.querySelector('.quiz-container').style.display = 'none';
+            document.getElementById('quizSummary').style.display = 'block';
+        }
+        
+        function hideSummary() {
+            document.querySelector('.quiz-container').style.display = 'block';
+            document.getElementById('quizSummary').style.display = 'none';
+        }
+        
+        function collectAnswers() {
+            const answers = [];
+            document.querySelectorAll('.quiz-question').forEach(questionDiv => {
+                const selectedRadio = questionDiv.querySelector('input[type="radio"]:checked');
+                if (selectedRadio) {
+                    const questionId = selectedRadio.name.split('_')[1];
+                    answers.push({
+                        QuestionID: parseInt(questionId),
+                        SelectedChoiceID: parseInt(selectedRadio.value)
+                    });
+                }
+            });
+            return answers;
+        }
+        
+        function submitQuiz() {
+            const answers = collectAnswers();
+            
+            if (answers.length < totalQuestions) {
+                if (!confirm('You have not answered all questions. Are you sure you want to submit?')) {
+                    return;
+                }
+            }
+            
+            // Show loading
+            const submitBtn = document.getElementById('finalSubmit') || document.getElementById('submitBtn');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting...';
+            submitBtn.disabled = true;
+            
+            // Submit via AJAX
+            fetch('/api/quiz/submit', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''
+                },
+                body: JSON.stringify({
+                    attemptId: @Model.AttemptId,
+                    answers: answers
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    window.location.href = `/quiz/result/${data.attemptId}`;
+                } else {
+                    alert('Error submitting quiz: ' + (data.error || 'Unknown error'));
+                    submitBtn.innerHTML = originalText;
+                    submitBtn.disabled = false;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error submitting quiz. Please try again.');
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            });
+        }
+        
+        // Prevent accidental page refresh
+        window.addEventListener('beforeunload', function(e) {
+            if (document.querySelectorAll('input[type="radio"]:checked').length > 0) {
+                e.preventDefault();
+                e.returnValue = '';
+            }
+        });
+    </script>
+}

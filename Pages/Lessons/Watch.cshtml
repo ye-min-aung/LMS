@@ -1,0 +1,290 @@
+@page "/lessons/{lessonId:int}/watch"
+@model WatchModel
+@{
+    ViewData["Title"] = Model.Lesson?.GetTitle() ?? "Watch Lesson";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <!-- Video Player Section -->
+        <div class="col-lg-8">
+            <div class="video-player-container">
+                @if (Model.Lesson?.LessonType == "Video" && !string.IsNullOrEmpty(Model.VideoStreamUrl))
+                {
+                    <video id="lessonVideo" 
+                           class="video-player" 
+                           controls 
+                           preload="metadata"
+                           data-lesson-id="@Model.Lesson.LessonID"
+                           data-enrollment-id="@Model.EnrollmentId"
+                           poster="@Model.ThumbnailUrl">
+                        <source src="@Model.VideoStreamUrl" type="video/mp4">
+                        <p>Your browser doesn't support HTML5 video. <a href="@Model.VideoStreamUrl">Download the video</a> instead.</p>
+                    </video>
+                    
+                    <!-- Video Controls Overlay -->
+                    <div class="video-controls-overlay">
+                        <div class="progress-bar-container">
+                            <div class="progress">
+                                <div id="videoProgress" class="progress-bar bg-primary" role="progressbar" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        <div class="video-info">
+                            <span id="currentTime">0:00</span> / <span id="duration">0:00</span>
+                        </div>
+                    </div>
+                }
+                else if (Model.Lesson?.LessonType == "Text")
+                {
+                    <div class="text-lesson-content">
+                        <div class="card">
+                            <div class="card-body">
+                                @Html.Raw(Model.Lesson.GetContent())
+                            </div>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        Video content is not available or you don't have access to this lesson.
+                    </div>
+                }
+            </div>
+            
+            <!-- Lesson Navigation -->
+            <div class="lesson-navigation mt-3">
+                <div class="d-flex justify-content-between">
+                    @if (Model.PreviousLesson != null)
+                    {
+                        <a href="/lessons/@Model.PreviousLesson.LessonID/watch" class="btn btn-outline-secondary">
+                            <i class="fas fa-chevron-left"></i> Previous: @Model.PreviousLesson.GetTitle()
+                        </a>
+                    }
+                    else
+                    {
+                        <div></div>
+                    }
+                    
+                    @if (Model.NextLesson != null)
+                    {
+                        <a href="/lessons/@Model.NextLesson.LessonID/watch" class="btn btn-primary">
+                            Next: @Model.NextLesson.GetTitle() <i class="fas fa-chevron-right"></i>
+                        </a>
+                    }
+                    else if (Model.IsLessonCompleted)
+                    {
+                        <button class="btn btn-success" disabled>
+                            <i class="fas fa-check"></i> Lesson Complete
+                        </button>
+                    }
+                </div>
+            </div>
+        </div>
+        
+        <!-- Lesson Information Sidebar -->
+        <div class="col-lg-4">
+            <div class="lesson-info-sidebar">
+                <!-- Lesson Details -->
+                <div class="card mb-3">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-play-circle"></i> @Model.Lesson?.GetTitle()
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-muted mb-2">
+                            <i class="fas fa-folder"></i> @Model.Lesson?.Module.GetTitle()
+                        </p>
+                        <p class="text-muted mb-2">
+                            <i class="fas fa-book"></i> @Model.Lesson?.Module.Course.GetTitle()
+                        </p>
+                        
+                        @if (Model.LessonProgress != null)
+                        {
+                            <div class="progress mb-2">
+                                <div class="progress-bar" 
+                                     role="progressbar" 
+                                     style="width: @(Model.LessonProgress.IsCompleted ? 100 : 0)%;">
+                                    @(Model.LessonProgress.IsCompleted ? "Complete" : "In Progress")
+                                </div>
+                            </div>
+                            
+                            <small class="text-muted">
+                                Last accessed: @Model.LessonProgress.LastAccessedAt.ToString("MMM dd, yyyy HH:mm")
+                            </small>
+                        }
+                    </div>
+                </div>
+                
+                <!-- Course Progress -->
+                <div class="card mb-3">
+                    <div class="card-header">
+                        <h6 class="mb-0">
+                            <i class="fas fa-chart-line"></i> Course Progress
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="progress mb-2">
+                            <div class="progress-bar bg-success" 
+                                 role="progressbar" 
+                                 style="width: @Model.CourseProgressPercentage%">
+                                @Model.CourseProgressPercentage.ToString("F0")%
+                            </div>
+                        </div>
+                        <small class="text-muted">
+                            @Model.CompletedLessons of @Model.TotalLessons lessons completed
+                        </small>
+                    </div>
+                </div>
+                
+                <!-- Quiz and Assignment -->
+                @if (Model.Lesson?.Quiz != null)
+                {
+                    <div class="card mb-3">
+                        <div class="card-header">
+                            <h6 class="mb-0">
+                                <i class="fas fa-question-circle"></i> Quiz Available
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <p class="mb-2">@Model.Lesson.Quiz.Title</p>
+                            @if (Model.QuizAttempt != null)
+                            {
+                                <div class="alert alert-info">
+                                    <small>
+                                        Last attempt: @Model.QuizAttempt.Score.ToString("F0")% 
+                                        (@(Model.QuizAttempt.Passed ? "Passed" : "Failed"))
+                                    </small>
+                                </div>
+                            }
+                            <a href="/quiz/@Model.Lesson.Quiz.QuizID/take" class="btn btn-outline-primary btn-sm">
+                                @(Model.QuizAttempt != null ? "Retake Quiz" : "Take Quiz")
+                            </a>
+                        </div>
+                    </div>
+                }
+                
+                @if (Model.Lesson?.Assignment != null)
+                {
+                    <div class="card mb-3">
+                        <div class="card-header">
+                            <h6 class="mb-0">
+                                <i class="fas fa-file-upload"></i> Assignment
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <p class="mb-2">@Model.Lesson.Assignment.Title</p>
+                            @if (Model.AssignmentSubmission != null)
+                            {
+                                <div class="alert alert-info">
+                                    <small>
+                                        Status: @Model.AssignmentSubmission.Status
+                                        <br>Grade: @Model.AssignmentGradeDisplay
+                                    </small>
+                                </div>
+                            }
+                            <a href="/assignment/@Model.Lesson.Assignment.AssignmentID/submit" class="btn btn-outline-primary btn-sm">
+                                @(Model.AssignmentSubmission != null ? "View Submission" : "Submit Assignment")
+                            </a>
+                        </div>
+                    </div>
+                }
+                
+                <!-- Module Lessons List -->
+                <div class="card">
+                    <div class="card-header">
+                        <h6 class="mb-0">
+                            <i class="fas fa-list"></i> Module Lessons
+                        </h6>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="list-group list-group-flush">
+                            @foreach (var lesson in Model.ModuleLessons)
+                            {
+                                <div class="list-group-item @(lesson.LessonID == Model.Lesson?.LessonID ? "active" : "")">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            @if (Model.LessonProgresses.Any(lp => lp.LessonID == lesson.LessonID && lp.IsCompleted))
+                                            {
+                                                <i class="fas fa-check-circle text-success"></i>
+                                            }
+                                            else if (lesson.LessonID == Model.Lesson?.LessonID)
+                                            {
+                                                <i class="fas fa-play-circle text-primary"></i>
+                                            }
+                                            else
+                                            {
+                                                <i class="fas fa-circle text-muted"></i>
+                                            }
+                                            
+                                            @if (lesson.LessonID != Model.Lesson?.LessonID)
+                                            {
+                                                <a href="/lessons/@lesson.LessonID/watch" class="text-decoration-none ms-2">
+                                                    @lesson.GetTitle()
+                                                </a>
+                                            }
+                                            else
+                                            {
+                                                <span class="ms-2">@lesson.GetTitle()</span>
+                                            }
+                                        </div>
+                                        <small class="text-muted">
+                                            @lesson.LessonType
+                                        </small>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Video player progress tracking
+        document.addEventListener('DOMContentLoaded', function() {
+            const video = document.getElementById('lessonVideo');
+            if (video) {
+                const lessonId = video.dataset.lessonId;
+                const enrollmentId = video.dataset.enrollmentId;
+                
+                initializeVideoPlayer(video, lessonId, enrollmentId);
+                
+                // Update progress bar
+                video.addEventListener('timeupdate', function() {
+                    const progress = (video.currentTime / video.duration) * 100;
+                    document.getElementById('videoProgress').style.width = progress + '%';
+                    
+                    // Update time display
+                    document.getElementById('currentTime').textContent = formatTime(video.currentTime);
+                    document.getElementById('duration').textContent = formatTime(video.duration);
+                });
+                
+                // Mark as complete when video ends
+                video.addEventListener('ended', function() {
+                    setTimeout(function() {
+                        if (confirm('Lesson completed! Would you like to continue to the next lesson?')) {
+                            const nextButton = document.querySelector('.lesson-navigation .btn-primary');
+                            if (nextButton) {
+                                window.location.href = nextButton.href;
+                            }
+                        }
+                    }, 1000);
+                });
+            }
+        });
+        
+        function formatTime(seconds) {
+            if (isNaN(seconds)) return '0:00';
+            
+            const minutes = Math.floor(seconds / 60);
+            const remainingSeconds = Math.floor(seconds % 60);
+            return minutes + ':' + (remainingSeconds < 10 ? '0' : '') + remainingSeconds;
+        }
+    </script>
+}

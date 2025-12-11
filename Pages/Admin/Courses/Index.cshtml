@@ -1,0 +1,84 @@
+@page "/Admin/Courses"
+@model LMSPlatform.Pages.Admin.Courses.IndexModel
+@{
+    ViewData["Title"] = "Manage Courses";
+}
+
+<div class="page-header">
+    <div class="container">
+        <h1><i class="fas fa-book-open me-3"></i>Manage Courses</h1>
+        <p class="mb-0">Create and manage courses</p>
+    </div>
+</div>
+
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div></div>
+        <a href="/Admin/Courses/Create" class="btn btn-primary">
+            <i class="fas fa-plus me-2"></i>Create Course
+        </a>
+    </div>
+
+    <div class="card">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th>Course</th>
+                            <th>Modules</th>
+                            <th>Lessons</th>
+                            <th>Students</th>
+                            <th>Price</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var course in Model.Courses)
+                        {
+                            <tr>
+                                <td>
+                                    <strong>@course.GetTitle()</strong>
+                                </td>
+                                <td>@course.Modules.Count</td>
+                                <td>@course.Modules.Sum(m => m.Lessons.Count)</td>
+                                <td>@course.Enrollments.Count</td>
+                                <td>
+                                    @if (course.Price > 0)
+                                    {
+                                        <span>@course.Price.ToString("N0") MMK</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-success">Free</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (course.IsPublished)
+                                    {
+                                        <span class="badge bg-success">Published</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-warning">Draft</span>
+                                    }
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <a href="/Admin/Courses/Edit/@course.CourseID" class="btn btn-outline-primary">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <a href="/Admin/Courses/Modules/@course.CourseID" class="btn btn-outline-secondary">
+                                            <i class="fas fa-layer-group"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

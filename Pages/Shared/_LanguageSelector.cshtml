@@ -1,0 +1,31 @@
+@using Microsoft.AspNetCore.Localization
+@using Microsoft.Extensions.Localization
+@using LMSPlatform.Resources
+@inject IStringLocalizer<SharedResource> Localizer
+
+@{
+    var requestCulture = Context.Features.Get<IRequestCultureFeature>();
+    var currentCulture = requestCulture?.RequestCulture.Culture.Name ?? "en";
+    var returnUrl = Context.Request.Path + Context.Request.QueryString;
+}
+
+<div class="dropdown">
+    <button class="btn btn-outline-light btn-sm dropdown-toggle" type="button" id="languageDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+        <i class="fas fa-globe me-1"></i>
+        @(currentCulture == "my" ? "မြန်မာ" : "EN")
+    </button>
+    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="languageDropdown">
+        <li>
+            <a class="dropdown-item @(currentCulture == "en" ? "active" : "")" 
+               href="/Language/SetLanguage?culture=en&returnUrl=@Uri.EscapeDataString(returnUrl)">
+                <span class="fi fi-gb me-2"></span>English
+            </a>
+        </li>
+        <li>
+            <a class="dropdown-item @(currentCulture == "my" ? "active" : "")" 
+               href="/Language/SetLanguage?culture=my&returnUrl=@Uri.EscapeDataString(returnUrl)">
+                <span class="fi fi-mm me-2"></span>မြန်မာ
+            </a>
+        </li>
+    </ul>
+</div>

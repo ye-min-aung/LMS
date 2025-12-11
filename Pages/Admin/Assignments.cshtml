@@ -1,0 +1,169 @@
+@page "/Admin/Assignments"
+@model LMSPlatform.Pages.Admin.AssignmentsModel
+@{
+    ViewData["Title"] = "Review Assignments";
+}
+
+<div class="page-header">
+    <div class="container">
+        <h1><i class="fas fa-tasks me-3"></i>Review Assignments</h1>
+        <p class="mb-0">Review and grade student submissions</p>
+    </div>
+</div>
+
+<div class="container">
+    <!-- Filter Tabs -->
+    <ul class="nav nav-tabs mb-4">
+        <li class="nav-item">
+            <a class="nav-link @(Model.Filter == "pending" ? "active" : "")" href="/Admin/Assignments?filter=pending">
+                Pending <span class="badge bg-warning">@Model.PendingCount</span>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link @(Model.Filter == "reviewed" ? "active" : "")" href="/Admin/Assignments?filter=reviewed">
+                Reviewed
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link @(Model.Filter == "all" ? "active" : "")" href="/Admin/Assignments?filter=all">
+                All
+            </a>
+        </li>
+    </ul>
+
+    @if (Model.Submissions.Any())
+    {
+        <div class="card">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>Student</th>
+                                <th>Assignment</th>
+                                <th>Course</th>
+                                <th>Submitted</th>
+                                <th>Status</th>
+                                <th>Grade</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var sub in Model.Submissions)
+                            {
+                                <tr>
+                                    <td>@sub.User?.FullName</td>
+                                    <td>@sub.Assignment?.Title</td>
+                                    <td>@sub.Assignment?.Lesson?.Module?.Course?.GetTitle()</td>
+                                    <td>@sub.SubmittedAt.ToString("MMM dd, HH:mm")</td>
+                                    <td>
+                                        <span class="badge @GetStatusBadgeClass(sub.Status ?? "Pending")">
+                                            @sub.Status
+                                        </span>
+                                    </td>
+                                    <td>
+                                        @if (sub.Grade.HasValue)
+                                        {
+                                            <span>@sub.Grade.Value.ToString("F0")%</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">-</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <a href="@sub.SubmissionFileUrl" class="btn btn-outline-primary" target="_blank">
+                                                <i class="fas fa-download"></i>
+                                            </a>
+                                            <button type="button" class="btn btn-outline-success" 
+                                                    data-bs-toggle="modal" 
+                                                    data-bs-target="#reviewModal"
+                                                    data-submission-id="@sub.SubmissionID"
+                                                    data-student="@sub.User?.FullName"
+                                                    data-assignment="@sub.Assignment?.Title">
+                                                <i class="fas fa-check"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="text-center py-5">
+            <i class="fas fa-inbox fa-4x text-muted mb-4"></i>
+            <h3>No Submissions</h3>
+            <p class="text-muted">No assignment submissions to review</p>
+        </div>
+    }
+</div>
+
+<!-- Review Modal -->
+<div class="modal fade" id="reviewModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post" asp-page-handler="Review">
+                <div class="modal-header">
+                    <h5 class="modal-title">Review Submission</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" name="submissionId" id="modalSubmissionId">
+                    <p><strong>Student:</strong> <span id="modalStudent"></span></p>
+                    <p><strong>Assignment:</strong> <span id="modalAssignment"></span></p>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Status</label>
+                        <select name="status" class="form-select" required>
+                            <option value="Passed">Passed</option>
+                            <option value="Failed">Failed</option>
+                            <option value="NeedsRevision">Needs Revision</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Grade (%)</label>
+                        <input type="number" name="grade" class="form-control" min="0" max="100">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Feedback</label>
+                        <textarea name="feedback" class="form-control" rows="3"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Submit Review</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@functions {
+    string GetStatusBadgeClass(string status)
+    {
+        return status switch
+        {
+            "Pending" => "bg-warning",
+            "Passed" => "bg-success",
+            "Failed" => "bg-danger",
+            _ => "bg-secondary"
+        };
+    }
+}
+
+@section Scripts {
+    <script>
+        document.getElementById('reviewModal').addEventListener('show.bs.modal', function (event) {
+            var button = event.relatedTarget;
+            document.getElementById('modalSubmissionId').value = button.getAttribute('data-submission-id');
+            document.getElementById('modalStudent').textContent = button.getAttribute('data-student');
+            document.getElementById('modalAssignment').textContent = button.getAttribute('data-assignment');
+        });
+    </script>
+}

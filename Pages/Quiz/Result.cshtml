@@ -1,0 +1,262 @@
+@page "/quiz/result/{attemptId:int}"
+@model ResultModel
+@{
+    ViewData["Title"] = "Quiz Results";
+}
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="quiz-container fade-in-up">
+                <!-- Results Header -->
+                <div class="text-center mb-5">
+                    <div class="result-icon mb-3">
+                        @if (Model.Result?.Passed == true)
+                        {
+                            <i class="fas fa-check-circle text-success" style="font-size: 4rem;"></i>
+                            <h2 class="text-success mt-3">Congratulations!</h2>
+                            <p class="lead text-muted">You have successfully passed the quiz</p>
+                        }
+                        else
+                        {
+                            <i class="fas fa-times-circle text-danger" style="font-size: 4rem;"></i>
+                            <h2 class="text-danger mt-3">Quiz Not Passed</h2>
+                            <p class="lead text-muted">You need @Model.Quiz?.PassingScore% to pass this quiz</p>
+                        }
+                    </div>
+                    
+                    <h3 class="mb-4">@Model.Quiz?.Title</h3>
+                </div>
+
+                <!-- Score Summary -->
+                <div class="row mb-5">
+                    <div class="col-md-3 col-6">
+                        <div class="dashboard-card primary">
+                            <div class="icon">
+                                <i class="fas fa-percentage"></i>
+                            </div>
+                            <h3 class="mb-1">@Model.Result?.Score.ToString("F1")%</h3>
+                            <p class="text-muted mb-0">Final Score</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-6">
+                        <div class="dashboard-card success">
+                            <div class="icon">
+                                <i class="fas fa-check"></i>
+                            </div>
+                            <h3 class="mb-1">@Model.Result?.CorrectAnswers</h3>
+                            <p class="text-muted mb-0">Correct Answers</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-6">
+                        <div class="dashboard-card warning">
+                            <div class="icon">
+                                <i class="fas fa-question"></i>
+                            </div>
+                            <h3 class="mb-1">@Model.Result?.TotalQuestions</h3>
+                            <p class="text-muted mb-0">Total Questions</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-6">
+                        <div class="dashboard-card primary">
+                            <div class="icon">
+                                <i class="fas fa-clock"></i>
+                            </div>
+                            <h3 class="mb-1">@(Model.Result?.Duration.ToString(@"mm\:ss") ?? "00:00")</h3>
+                            <p class="text-muted mb-0">Time Taken</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Detailed Results -->
+                @if (Model.Result?.QuestionResults.Any() == true)
+                {
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="fas fa-list-alt"></i> Detailed Results
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            @foreach (var questionResult in Model.Result.QuestionResults)
+                            {
+                                <div class="question-result mb-4">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <h6 class="mb-0">Question @(Model.Result.QuestionResults.IndexOf(questionResult) + 1)</h6>
+                                        <span class="badge @(questionResult.IsCorrect ? "bg-success" : "bg-danger")">
+                                            @(questionResult.IsCorrect ? "Correct" : "Incorrect")
+                                            (@questionResult.Points pts)
+                                        </span>
+                                    </div>
+                                    
+                                    <p class="question-text mb-3">@questionResult.QuestionText</p>
+                                    
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="answer-box @(questionResult.IsCorrect ? "correct" : "incorrect")">
+                                                <strong>Your Answer:</strong>
+                                                <p class="mb-0">@questionResult.SelectedChoiceText</p>
+                                            </div>
+                                        </div>
+                                        @if (!questionResult.IsCorrect)
+                                        {
+                                            <div class="col-md-6">
+                                                <div class="answer-box correct">
+                                                    <strong>Correct Answer:</strong>
+                                                    <p class="mb-0">@questionResult.CorrectChoiceText</p>
+                                                </div>
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                                
+                                @if (questionResult != Model.Result.QuestionResults.Last())
+                                {
+                                    <hr>
+                                }
+                            }
+                        </div>
+                    </div>
+                }
+
+                <!-- Attempt History -->
+                @if (Model.PreviousAttempts.Any())
+                {
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="fas fa-history"></i> Attempt History
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Attempt</th>
+                                            <th>Date</th>
+                                            <th>Score</th>
+                                            <th>Status</th>
+                                            <th>Duration</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var attempt in Model.PreviousAttempts.OrderByDescending(a => a.StartedAt))
+                                        {
+                                            <tr class="@(attempt.AttemptID == Model.AttemptId ? "table-primary" : "")">
+                                                <td>
+                                                    #@attempt.AttemptNumber
+                                                    @if (attempt.AttemptID == Model.AttemptId)
+                                                    {
+                                                        <span class="badge bg-primary ms-2">Current</span>
+                                                    }
+                                                </td>
+                                                <td>@attempt.StartedAt.ToString("MMM dd, yyyy HH:mm")</td>
+                                                <td>
+                                                    <strong class="@(attempt.Passed ? "text-success" : "text-danger")">
+                                                        @attempt.Score.ToString("F1")%
+                                                    </strong>
+                                                </td>
+                                                <td>
+                                                    <span class="badge @(attempt.Passed ? "bg-success" : "bg-danger")">
+                                                        @(attempt.Passed ? "Passed" : "Failed")
+                                                    </span>
+                                                </td>
+                                                <td>@(attempt.GetDuration()?.ToString(@"mm\:ss") ?? "N/A")</td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                }
+
+                <!-- Action Buttons -->
+                <div class="text-center">
+                    @if (Model.Result?.Passed != true && Model.RemainingAttempts > 0)
+                    {
+                        <a href="/quiz/@Model.Quiz?.QuizID/take" class="btn btn-warning me-3">
+                            <i class="fas fa-redo"></i> Retake Quiz (@Model.RemainingAttempts attempts left)
+                        </a>
+                    }
+                    
+                    @if (Model.Quiz?.LessonID.HasValue == true)
+                    {
+                        <a href="/lessons/@Model.Quiz.LessonID/watch" class="btn btn-primary me-3">
+                            <i class="fas fa-arrow-left"></i> Back to Lesson
+                        </a>
+                    }
+                    
+                    <a href="/dashboard" class="btn btn-outline-secondary">
+                        <i class="fas fa-home"></i> Dashboard
+                    </a>
+                </div>
+
+                <!-- Next Steps -->
+                @if (Model.Result?.Passed == true && Model.Quiz?.RequiredToUnlock == true)
+                {
+                    <div class="alert alert-success mt-4">
+                        <i class="fas fa-unlock"></i>
+                        <strong>Great job!</strong> You have unlocked the next content in this course.
+                    </div>
+                }
+                else if (Model.Result?.Passed != true && Model.RemainingAttempts == 0)
+                {
+                    <div class="alert alert-warning mt-4">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <strong>No more attempts remaining.</strong> Please contact your instructor if you need additional attempts.
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.answer-box {
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+}
+
+.answer-box.correct {
+    background-color: #d4edda;
+    border: 1px solid #c3e6cb;
+    color: #155724;
+}
+
+.answer-box.incorrect {
+    background-color: #f8d7da;
+    border: 1px solid #f5c6cb;
+    color: #721c24;
+}
+
+.question-result {
+    padding: 20px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+}
+
+.result-icon {
+    animation: bounceIn 0.8s ease-out;
+}
+
+@@keyframes bounceIn {
+    0% {
+        opacity: 0;
+        transform: scale(0.3);
+    }
+    50% {
+        opacity: 1;
+        transform: scale(1.05);
+    }
+    70% {
+        transform: scale(0.9);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+</style>

@@ -1,0 +1,185 @@
+@page
+@model LMSPlatform.Pages.Courses.IndexModel
+@{
+    ViewData["Title"] = "Browse Courses";
+}
+
+<div class="page-header">
+    <div class="container">
+        <h1><i class="fas fa-book-open me-3"></i>Browse Courses</h1>
+        <p class="mb-0">Discover courses to advance your skills</p>
+    </div>
+</div>
+
+<div class="container">
+    <!-- Search and Filter -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-6">
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-search"></i></span>
+                        <input type="text" name="search" class="form-control" placeholder="Search courses..." value="@Model.SearchTerm">
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <select name="category" class="form-select">
+                        <option value="">All Categories</option>
+                        <option value="web" selected="@(Model.Category == "web")">Web Development</option>
+                        <option value="mobile" selected="@(Model.Category == "mobile")">Mobile Development</option>
+                        <option value="data" selected="@(Model.Category == "data")">Data Science</option>
+                        <option value="business" selected="@(Model.Category == "business")">Business</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-filter me-1"></i>Filter
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Course Grid -->
+    @if (Model.Courses.Any())
+    {
+        <div class="row g-4">
+            @foreach (var course in Model.Courses)
+            {
+                <div class="col-lg-4 col-md-6">
+                    <div class="course-card">
+                        <div class="course-thumb">
+                            <img src="@(course.ThumbnailURL ?? "https://via.placeholder.com/400x250?text=Course")" alt="@course.GetTitle()">
+                            @if (course.Price > 0)
+                            {
+                                <span class="course-price">@course.Price.ToString("N0") MMK</span>
+                            }
+                            else
+                            {
+                                <span class="course-price free">Free</span>
+                            }
+                        </div>
+                        <div class="course-content">
+                            <h5 class="course-title">
+                                <a href="/Courses/Details/@course.CourseID">@course.GetTitle()</a>
+                            </h5>
+                            <p class="course-description text-muted">
+                                @(course.GetDescription()?.Length > 100 ? course.GetDescription()?.Substring(0, 100) + "..." : course.GetDescription())
+                            </p>
+                            <div class="course-meta">
+                                <span><i class="fas fa-layer-group"></i> @course.Modules.Count modules</span>
+                                <span><i class="fas fa-users"></i> @course.Enrollments.Count students</span>
+                            </div>
+                        </div>
+                        <div class="course-footer">
+                            <a href="/Courses/Details/@course.CourseID" class="btn btn-primary w-100">
+                                <i class="fas fa-eye me-1"></i>View Course
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="text-center py-5">
+            <i class="fas fa-search fa-4x text-muted mb-4"></i>
+            <h3>No Courses Found</h3>
+            <p class="text-muted">Try adjusting your search or filter criteria</p>
+        </div>
+    }
+</div>
+
+<style>
+.course-card {
+    background: white;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+    transition: all 0.3s ease;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.course-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+}
+
+.course-thumb {
+    position: relative;
+    overflow: hidden;
+}
+
+.course-thumb img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.course-card:hover .course-thumb img {
+    transform: scale(1.1);
+}
+
+.course-price {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: #ffb606;
+    color: #333;
+    padding: 5px 15px;
+    border-radius: 20px;
+    font-weight: 700;
+}
+
+.course-price.free {
+    background: #27ae60;
+    color: white;
+}
+
+.course-content {
+    padding: 20px;
+    flex-grow: 1;
+}
+
+.course-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 10px;
+    line-height: 1.4;
+}
+
+.course-title a {
+    color: #333;
+    text-decoration: none;
+}
+
+.course-title a:hover {
+    color: #3498db;
+}
+
+.course-description {
+    font-size: 0.9rem;
+    margin-bottom: 15px;
+}
+
+.course-meta {
+    display: flex;
+    justify-content: space-between;
+    color: #999;
+    font-size: 0.85rem;
+}
+
+.course-meta i {
+    color: #ffb606;
+    margin-right: 5px;
+}
+
+.course-footer {
+    padding: 15px 20px;
+    border-top: 1px solid #eee;
+}
+</style>

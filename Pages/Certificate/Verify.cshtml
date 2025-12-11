@@ -1,0 +1,131 @@
+@page "/certificate/verify/{certId?}"
+@model LMSPlatform.Pages.Certificate.VerifyModel
+@{
+    ViewData["Title"] = "Verify Certificate";
+}
+
+<div class="page-header">
+    <div class="container">
+        <h1><i class="fas fa-check-double me-3"></i>Certificate Verification</h1>
+        <p class="mb-0">Verify the authenticity of a certificate</p>
+    </div>
+</div>
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Verification Form -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <form method="get" action="/certificate/verify">
+                        <div class="input-group input-group-lg">
+                            <span class="input-group-text">
+                                <i class="fas fa-fingerprint"></i>
+                            </span>
+                            <input type="text" 
+                                   name="certId" 
+                                   class="form-control" 
+                                   placeholder="Enter Certificate ID (e.g., CERT-20241210-ABC12345)"
+                                   value="@Model.CertificateId">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-search me-1"></i> Verify
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Verification Result -->
+            @if (!string.IsNullOrEmpty(Model.CertificateId))
+            {
+                @if (Model.Certificate != null)
+                {
+                    <div class="card border-success">
+                        <div class="card-header bg-success text-white">
+                            <h5 class="mb-0">
+                                <i class="fas fa-check-circle me-2"></i>Certificate Verified
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="text-center mb-4">
+                                <i class="fas fa-award text-warning" style="font-size: 4rem;"></i>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h6 class="text-muted">Student Name</h6>
+                                    <p class="lead">@Model.Certificate.User?.FullName</p>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6 class="text-muted">Course</h6>
+                                    <p class="lead">@Model.Certificate.Course?.GetTitle()</p>
+                                </div>
+                            </div>
+                            
+                            <hr>
+                            
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <h6 class="text-muted">Issue Date</h6>
+                                    <p>@Model.Certificate.IssuedDate.ToString("MMMM dd, yyyy")</p>
+                                </div>
+                                <div class="col-md-4">
+                                    <h6 class="text-muted">Completion Date</h6>
+                                    <p>@Model.Certificate.CompletionDate.ToString("MMMM dd, yyyy")</p>
+                                </div>
+                                <div class="col-md-4">
+                                    <h6 class="text-muted">Final Grade</h6>
+                                    <p>@Model.Certificate.FinalGrade.ToString("F1")%</p>
+                                </div>
+                            </div>
+                            
+                            <hr>
+                            
+                            <div class="text-center">
+                                <p class="text-muted mb-2">Certificate ID</p>
+                                <code class="fs-5">@Model.Certificate.UniqueCertID</code>
+                            </div>
+                        </div>
+                        <div class="card-footer text-center">
+                            <small class="text-muted">
+                                <i class="fas fa-shield-alt me-1"></i>
+                                This certificate was verified on @DateTime.Now.ToString("MMMM dd, yyyy 'at' HH:mm")
+                            </small>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <div class="card border-danger">
+                        <div class="card-header bg-danger text-white">
+                            <h5 class="mb-0">
+                                <i class="fas fa-times-circle me-2"></i>Certificate Not Found
+                            </h5>
+                        </div>
+                        <div class="card-body text-center">
+                            <i class="fas fa-exclamation-triangle text-danger" style="font-size: 4rem;"></i>
+                            <h4 class="mt-4">Invalid Certificate ID</h4>
+                            <p class="text-muted">
+                                The certificate ID <code>@Model.CertificateId</code> was not found in our system.
+                            </p>
+                            <p class="text-muted">
+                                Please check the certificate ID and try again. If you believe this is an error, 
+                                please contact support.
+                            </p>
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="text-center py-5">
+                    <i class="fas fa-certificate fa-4x text-muted mb-4"></i>
+                    <h4>Enter a Certificate ID to Verify</h4>
+                    <p class="text-muted">
+                        Certificate IDs are in the format: CERT-YYYYMMDD-XXXXXXXX
+                    </p>
+                </div>
+            }
+        </div>
+    </div>
+</div>

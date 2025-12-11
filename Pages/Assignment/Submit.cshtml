@@ -1,0 +1,424 @@
+@page "/assignment/{assignmentId:int}/submit"
+@model SubmitModel
+@{
+    ViewData["Title"] = Model.Assignment?.Title ?? "Submit Assignment";
+}
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="quiz-container fade-in-up">
+                <!-- Assignment Header -->
+                <div class="assignment-header text-center mb-4">
+                    <h2 class="mb-3">@Model.Assignment?.Title</h2>
+                    
+                    @if (Model.Assignment?.Lesson != null)
+                    {
+                        <nav aria-label="breadcrumb">
+                            <ol class="breadcrumb justify-content-center">
+                                <li class="breadcrumb-item">
+                                    <a href="/courses/@Model.Assignment.Lesson.Module.CourseID">@Model.Assignment.Lesson.Module.Course.GetTitle()</a>
+                                </li>
+                                <li class="breadcrumb-item">
+                                    <a href="/lessons/@Model.Assignment.Lesson.LessonID/watch">@Model.Assignment.Lesson.GetTitle()</a>
+                                </li>
+                                <li class="breadcrumb-item active">Assignment</li>
+                            </ol>
+                        </nav>
+                    }
+                </div>
+
+                <!-- Assignment Info -->
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-body text-center">
+                                <i class="fas fa-calendar-alt text-primary fa-2x mb-2"></i>
+                                <h6>Due Date</h6>
+                                <p class="mb-0 @(Model.Assignment?.IsOverdue() == true ? "text-danger" : "text-muted")">
+                                    @if (Model.Assignment?.DueDate.HasValue == true)
+                                    {
+                                        @Model.Assignment.DueDate.Value.ToString("MMM dd, yyyy HH:mm")
+                                        @if (Model.Assignment.IsOverdue())
+                                        {
+                                            <br><small class="text-danger">Overdue</small>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <span>No due date</span>
+                                    }
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-body text-center">
+                                <i class="fas fa-file-upload text-success fa-2x mb-2"></i>
+                                <h6>File Requirements</h6>
+                                <p class="mb-0 text-muted">
+                                    Max: @((Model.Assignment?.MaxFileSize ?? 0) / 1024 / 1024)MB<br>
+                                    <small>@Model.Assignment?.AllowedFileTypes</small>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Assignment Instructions -->
+                @if (!string.IsNullOrEmpty(Model.Assignment?.Instructions))
+                {
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="fas fa-info-circle"></i> Instructions
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="assignment-instructions">
+                                @Html.Raw(Model.Assignment.Instructions.Replace("\n", "<br>"))
+                            </div>
+                        </div>
+                    </div>
+                }
+
+                <!-- Current Submission Status -->
+                @if (Model.ExistingSubmission != null)
+                {
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="fas fa-file-check"></i> Current Submission
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row align-items-center">
+                                <div class="col-md-8">
+                                    <div class="submission-info">
+                                        <h6 class="mb-1">@Model.ExistingSubmission.OriginalFileName</h6>
+                                        <p class="text-muted mb-1">
+                                            Submitted: @Model.ExistingSubmission.SubmittedAt.ToString("MMM dd, yyyy HH:mm")
+                                        </p>
+                                        <span class="badge @GetStatusBadgeClass(Model.ExistingSubmission.Status)">
+                                            @Model.ExistingSubmission.Status
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="col-md-4 text-end">
+                                    <a href="@Model.ExistingSubmission.SubmissionFileUrl" 
+                                       class="btn btn-outline-primary btn-sm" 
+                                       download="@Model.ExistingSubmission.OriginalFileName">
+                                        <i class="fas fa-download"></i> Download
+                                    </a>
+                                </div>
+                            </div>
+                            
+                            @if (Model.ExistingSubmission.IsReviewed)
+                            {
+                                <hr>
+                                <div class="review-feedback">
+                                    <h6 class="text-primary">
+                                        <i class="fas fa-user-check"></i> Instructor Feedback
+                                    </h6>
+                                    @if (Model.ExistingSubmission.Grade.HasValue)
+                                    {
+                                        <div class="grade-display mb-2">
+                                            <span class="badge bg-primary fs-6">
+                                                Grade: @Model.ExistingSubmission.Grade.Value.ToString("F0")%
+                                            </span>
+                                        </div>
+                                    }
+                                    @if (!string.IsNullOrEmpty(Model.ExistingSubmission.AdminMark))
+                                    {
+                                        <div class="feedback-text">
+                                            <p class="mb-0">@Model.ExistingSubmission.AdminMark</p>
+                                        </div>
+                                    }
+                                    <small class="text-muted">
+                                        Reviewed by @Model.ExistingSubmission.ReviewedByUser?.FullName 
+                                        on @Model.ExistingSubmission.ReviewedAt?.ToString("MMM dd, yyyy HH:mm")
+                                    </small>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
+
+                <!-- File Upload Form -->
+                @if (!Model.Assignment?.IsOverdue() == true)
+                {
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="fas fa-cloud-upload-alt"></i> 
+                                @(Model.ExistingSubmission != null ? "Update Submission" : "Submit Assignment")
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <form id="assignmentForm" method="post" enctype="multipart/form-data">
+                                <div class="upload-area mb-4" id="uploadArea">
+                                    <div class="upload-content text-center">
+                                        <i class="fas fa-cloud-upload-alt fa-3x text-primary mb-3"></i>
+                                        <h5>Drag & Drop your file here</h5>
+                                        <p class="text-muted mb-3">or click to browse</p>
+                                        <input type="file" 
+                                               id="assignmentFile" 
+                                               name="assignmentFile" 
+                                               class="form-control d-none" 
+                                               accept="@GetAcceptAttribute(Model.Assignment?.AllowedFileTypes)"
+                                               required>
+                                        <button type="button" class="btn btn-outline-primary" onclick="document.getElementById('assignmentFile').click()">
+                                            <i class="fas fa-folder-open"></i> Choose File
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <div id="fileInfo" class="file-info" style="display: none;">
+                                    <div class="alert alert-info">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <i class="fas fa-file"></i>
+                                                <span id="fileName"></span>
+                                                <small class="text-muted">(<span id="fileSize"></span>)</small>
+                                            </div>
+                                            <button type="button" class="btn btn-sm btn-outline-danger" onclick="clearFile()">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="text-center">
+                                    <button type="submit" class="btn btn-success btn-lg" id="submitBtn" disabled>
+                                        <i class="fas fa-paper-plane"></i> 
+                                        @(Model.ExistingSubmission != null ? "Update Submission" : "Submit Assignment")
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <div class="alert alert-danger text-center">
+                        <i class="fas fa-exclamation-triangle fa-2x mb-3"></i>
+                        <h5>Assignment Overdue</h5>
+                        <p class="mb-0">This assignment was due on @Model.Assignment?.DueDate?.ToString("MMM dd, yyyy HH:mm"). Submissions are no longer accepted.</p>
+                    </div>
+                }
+
+                <!-- Navigation -->
+                <div class="text-center mt-4">
+                    @if (Model.Assignment?.LessonID.HasValue == true)
+                    {
+                        <a href="/lessons/@Model.Assignment.LessonID/watch" class="btn btn-outline-secondary me-3">
+                            <i class="fas fa-arrow-left"></i> Back to Lesson
+                        </a>
+                    }
+                    <a href="/dashboard" class="btn btn-outline-primary">
+                        <i class="fas fa-home"></i> Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.upload-area {
+    border: 2px dashed #dee2e6;
+    border-radius: 12px;
+    padding: 40px 20px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.upload-area:hover {
+    border-color: var(--primary-color);
+    background-color: #f8f9fa;
+}
+
+.upload-area.dragover {
+    border-color: var(--primary-color);
+    background-color: #e3f2fd;
+}
+
+.file-info {
+    margin-top: 20px;
+}
+
+.assignment-instructions {
+    line-height: 1.8;
+}
+
+.submission-info h6 {
+    color: var(--primary-color);
+}
+
+.review-feedback {
+    background-color: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+    border-left: 4px solid var(--primary-color);
+}
+
+.grade-display {
+    text-align: center;
+}
+</style>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const uploadArea = document.getElementById('uploadArea');
+            const fileInput = document.getElementById('assignmentFile');
+            const fileInfo = document.getElementById('fileInfo');
+            const fileName = document.getElementById('fileName');
+            const fileSize = document.getElementById('fileSize');
+            const submitBtn = document.getElementById('submitBtn');
+            const form = document.getElementById('assignmentForm');
+
+            // Drag and drop functionality
+            uploadArea.addEventListener('click', () => fileInput.click());
+            
+            uploadArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                uploadArea.classList.add('dragover');
+            });
+            
+            uploadArea.addEventListener('dragleave', () => {
+                uploadArea.classList.remove('dragover');
+            });
+            
+            uploadArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                uploadArea.classList.remove('dragover');
+                
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    fileInput.files = files;
+                    handleFileSelect();
+                }
+            });
+
+            // File input change
+            fileInput.addEventListener('change', handleFileSelect);
+
+            function handleFileSelect() {
+                const file = fileInput.files[0];
+                if (file) {
+                    fileName.textContent = file.name;
+                    fileSize.textContent = formatFileSize(file.size);
+                    fileInfo.style.display = 'block';
+                    submitBtn.disabled = false;
+                    
+                    // Validate file
+                    validateFile(file);
+                } else {
+                    clearFile();
+                }
+            }
+
+            function validateFile(file) {
+                const maxSize = @(Model.Assignment?.MaxFileSize ?? 10485760);
+                const allowedTypes = '@Model.Assignment?.AllowedFileTypes'.split(',');
+                const fileExtension = file.name.split('.').pop().toLowerCase();
+
+                if (file.size > maxSize) {
+                    alert(`File size (${formatFileSize(file.size)}) exceeds maximum allowed size (${formatFileSize(maxSize)})`);
+                    clearFile();
+                    return false;
+                }
+
+                if (!allowedTypes.includes(fileExtension)) {
+                    alert(`File type .${fileExtension} is not allowed. Allowed types: ${allowedTypes.join(', ')}`);
+                    clearFile();
+                    return false;
+                }
+
+                return true;
+            }
+
+            window.clearFile = function() {
+                fileInput.value = '';
+                fileInfo.style.display = 'none';
+                submitBtn.disabled = true;
+            }
+
+            function formatFileSize(bytes) {
+                if (bytes === 0) return '0 Bytes';
+                const k = 1024;
+                const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+                const i = Math.floor(Math.log(bytes) / Math.log(k));
+                return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+            }
+
+            // Form submission
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                if (!fileInput.files[0]) {
+                    alert('Please select a file to upload.');
+                    return;
+                }
+
+                // Show loading
+                const originalText = submitBtn.innerHTML;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading...';
+                submitBtn.disabled = true;
+
+                // Submit form
+                const formData = new FormData(form);
+                
+                fetch(form.action || window.location.pathname, {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => {
+                    if (response.ok) {
+                        return response.text();
+                    }
+                    throw new Error('Upload failed');
+                })
+                .then(data => {
+                    // Check if response contains success indicator
+                    if (data.includes('success') || response.redirected) {
+                        alert('Assignment submitted successfully!');
+                        window.location.reload();
+                    } else {
+                        throw new Error('Upload failed');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error uploading file. Please try again.');
+                    submitBtn.innerHTML = originalText;
+                    submitBtn.disabled = false;
+                });
+            });
+        });
+    </script>
+}
+
+@functions {
+    private string GetStatusBadgeClass(string status)
+    {
+        return status switch
+        {
+            "Pending" => "bg-warning",
+            "Passed" => "bg-success",
+            "Failed" => "bg-danger",
+            _ => "bg-secondary"
+        };
+    }
+
+    private string GetAcceptAttribute(string? allowedTypes)
+    {
+        if (string.IsNullOrEmpty(allowedTypes))
+            return "";
+        
+        var types = allowedTypes.Split(',', StringSplitOptions.RemoveEmptyEntries);
+        return string.Join(",", types.Select(t => "." + t.Trim()));
+    }
+}

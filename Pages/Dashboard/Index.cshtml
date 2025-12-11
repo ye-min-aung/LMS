@@ -1,0 +1,241 @@
+@page
+@model LMSPlatform.Pages.Dashboard.IndexModel
+@{
+    ViewData["Title"] = "My Dashboard";
+}
+
+<div class="page-header">
+    <div class="container">
+        <h1><i class="fas fa-tachometer-alt me-3"></i>My Dashboard</h1>
+        <p class="mb-0">Welcome back, @Model.User?.FullName!</p>
+    </div>
+</div>
+
+<div class="container">
+    <!-- Stats Overview -->
+    <div class="dashboard-stats">
+        <div class="stat-card">
+            <div class="stat-icon primary">
+                <i class="fas fa-book-open"></i>
+            </div>
+            <div class="stat-info">
+                <h3>@Model.EnrolledCourses</h3>
+                <p>Enrolled Courses</p>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon success">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <div class="stat-info">
+                <h3>@Model.CompletedCourses</h3>
+                <p>Completed</p>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon warning">
+                <i class="fas fa-certificate"></i>
+            </div>
+            <div class="stat-info">
+                <h3>@Model.CertificatesEarned</h3>
+                <p>Certificates</p>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon secondary">
+                <i class="fas fa-clock"></i>
+            </div>
+            <div class="stat-info">
+                <h3>@Model.InProgressCourses</h3>
+                <p>In Progress</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <!-- Continue Learning -->
+        <div class="col-lg-8">
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="fas fa-play-circle me-2"></i>Continue Learning</h5>
+                    <a href="/Courses" class="btn btn-sm btn-outline-primary">Browse All</a>
+                </div>
+                <div class="card-body">
+                    @if (Model.ActiveEnrollments.Any())
+                    {
+                        @foreach (var enrollment in Model.ActiveEnrollments.Take(3))
+                        {
+                            <div class="course-progress-item mb-4">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <div>
+                                        <h6 class="mb-1">@enrollment.Course?.GetTitle()</h6>
+                                        <small class="text-muted">
+                                            @if (enrollment.LastLesson != null)
+                                            {
+                                                <span>Last: @enrollment.LastLesson.GetTitle()</span>
+                                            }
+                                        </small>
+                                    </div>
+                                    <span class="badge bg-primary">@enrollment.ProgressPercentage.ToString("F0")%</span>
+                                </div>
+                                <div class="progress mb-2" style="height: 8px;">
+                                    <div class="progress-bar" style="width: @enrollment.ProgressPercentage%"></div>
+                                </div>
+                                <div class="d-flex justify-content-between">
+                                    <small class="text-muted">
+                                        @enrollment.CompletedLessons / @enrollment.TotalLessons lessons
+                                    </small>
+                                    @if (enrollment.NextLesson != null)
+                                    {
+                                        <a href="/lessons/@enrollment.NextLesson.LessonID/watch" class="btn btn-sm btn-primary">
+                                            <i class="fas fa-play me-1"></i>Continue
+                                        </a>
+                                    }
+                                    else if (enrollment.LastLesson != null)
+                                    {
+                                        <a href="/lessons/@enrollment.LastLesson.LessonID/watch" class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-redo me-1"></i>Resume
+                                        </a>
+                                    }
+                                </div>
+                            </div>
+                            @if (enrollment != Model.ActiveEnrollments.Take(3).Last())
+                            {
+                                <hr>
+                            }
+                        }
+                    }
+                    else
+                    {
+                        <div class="text-center py-4">
+                            <i class="fas fa-book-open fa-3x text-muted mb-3"></i>
+                            <h5>No Active Courses</h5>
+                            <p class="text-muted">Start learning by enrolling in a course</p>
+                            <a href="/Courses" class="btn btn-primary">
+                                <i class="fas fa-search me-1"></i>Browse Courses
+                            </a>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Recent Certificates -->
+            @if (Model.RecentCertificates.Any())
+            {
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0"><i class="fas fa-award me-2"></i>Recent Certificates</h5>
+                        <a href="/Dashboard/Certificates" class="btn btn-sm btn-outline-primary">View All</a>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            @foreach (var cert in Model.RecentCertificates.Take(2))
+                            {
+                                <div class="col-md-6">
+                                    <div class="certificate-mini-card">
+                                        <div class="d-flex align-items-center">
+                                            <div class="cert-mini-icon me-3">
+                                                <i class="fas fa-certificate"></i>
+                                            </div>
+                                            <div>
+                                                <h6 class="mb-1">@cert.Course?.GetTitle()</h6>
+                                                <small class="text-muted">@cert.IssuedDate.ToString("MMM dd, yyyy")</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Quick Actions -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-bolt me-2"></i>Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="/Courses" class="btn btn-outline-primary">
+                            <i class="fas fa-search me-2"></i>Browse Courses
+                        </a>
+                        <a href="/Dashboard/Certificates" class="btn btn-outline-success">
+                            <i class="fas fa-certificate me-2"></i>My Certificates
+                        </a>
+                        <a href="/Identity/Account/Manage" class="btn btn-outline-secondary">
+                            <i class="fas fa-user-cog me-2"></i>Account Settings
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Learning Stats -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-chart-pie me-2"></i>Learning Stats</h5>
+                </div>
+                <div class="card-body">
+                    <div class="stat-item-row mb-3">
+                        <span class="text-muted">Total Lessons Completed</span>
+                        <strong>@Model.TotalLessonsCompleted</strong>
+                    </div>
+                    <div class="stat-item-row mb-3">
+                        <span class="text-muted">Quizzes Passed</span>
+                        <strong>@Model.QuizzesPassed</strong>
+                    </div>
+                    <div class="stat-item-row mb-3">
+                        <span class="text-muted">Assignments Submitted</span>
+                        <strong>@Model.AssignmentsSubmitted</strong>
+                    </div>
+                    <div class="stat-item-row">
+                        <span class="text-muted">Member Since</span>
+                        <strong>@Model.User?.CreatedAt.ToString("MMM yyyy")</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.course-progress-item {
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 10px;
+}
+
+.certificate-mini-card {
+    padding: 15px;
+    background: linear-gradient(135deg, #fff9e6 0%, #fff5d6 100%);
+    border: 1px solid #ffb606;
+    border-radius: 10px;
+}
+
+.cert-mini-icon {
+    width: 45px;
+    height: 45px;
+    background: #ffb606;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #333;
+    font-size: 1.2rem;
+}
+
+.stat-item-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.stat-item-row:last-child {
+    border-bottom: none;
+}
+</style>

@@ -1,0 +1,259 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:element name="root" msdata:IsDataSet="true">
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter</value>
+  </resheader>
+  <data name="Home" xml:space="preserve">
+    <value>ပင်မစာမျက်နှာ</value>
+  </data>
+  <data name="Courses" xml:space="preserve">
+    <value>သင်တန်းများ</value>
+  </data>
+  <data name="Dashboard" xml:space="preserve">
+    <value>ဒက်ရှ်ဘုတ်</value>
+  </data>
+  <data name="Login" xml:space="preserve">
+    <value>ဝင်ရောက်ရန်</value>
+  </data>
+  <data name="Register" xml:space="preserve">
+    <value>စာရင်းသွင်းရန်</value>
+  </data>
+  <data name="Logout" xml:space="preserve">
+    <value>ထွက်ရန်</value>
+  </data>
+  <data name="Profile" xml:space="preserve">
+    <value>ပရိုဖိုင်</value>
+  </data>
+  <data name="Certificates" xml:space="preserve">
+    <value>လက်မှတ်များ</value>
+  </data>
+  <data name="Welcome" xml:space="preserve">
+    <value>ကြိုဆိုပါသည်</value>
+  </data>
+  <data name="LearnWithoutLimits" xml:space="preserve">
+    <value>ကန့်သတ်ချက်မရှိ သင်ယူပါ</value>
+  </data>
+  <data name="BrowseCourses" xml:space="preserve">
+    <value>သင်တန်းများကြည့်ရှုရန်</value>
+  </data>
+  <data name="GetStarted" xml:space="preserve">
+    <value>စတင်ရန်</value>
+  </data>
+  <data name="EnrollNow" xml:space="preserve">
+    <value>ယခုစာရင်းသွင်းရန်</value>
+  </data>
+  <data name="ContinueLearning" xml:space="preserve">
+    <value>ဆက်လက်သင်ယူရန်</value>
+  </data>
+  <data name="ViewCourse" xml:space="preserve">
+    <value>သင်တန်းကြည့်ရန်</value>
+  </data>
+  <data name="Free" xml:space="preserve">
+    <value>အခမဲ့</value>
+  </data>
+  <data name="Students" xml:space="preserve">
+    <value>ကျောင်းသားများ</value>
+  </data>
+  <data name="Modules" xml:space="preserve">
+    <value>မော်ဂျူးများ</value>
+  </data>
+  <data name="Lessons" xml:space="preserve">
+    <value>သင်ခန်းစာများ</value>
+  </data>
+  <data name="Progress" xml:space="preserve">
+    <value>တိုးတက်မှု</value>
+  </data>
+  <data name="Completed" xml:space="preserve">
+    <value>ပြီးဆုံးပြီ</value>
+  </data>
+  <data name="InProgress" xml:space="preserve">
+    <value>လုပ်ဆောင်နေဆဲ</value>
+  </data>
+  <data name="Language" xml:space="preserve">
+    <value>ဘာသာစကား</value>
+  </data>
+  <data name="English" xml:space="preserve">
+    <value>အင်္ဂလိပ်</value>
+  </data>
+  <data name="Myanmar" xml:space="preserve">
+    <value>မြန်မာ</value>
+  </data>
+  <data name="Admin" xml:space="preserve">
+    <value>စီမံခန့်ခွဲသူ</value>
+  </data>
+  <data name="Settings" xml:space="preserve">
+    <value>ဆက်တင်များ</value>
+  </data>
+  <data name="Search" xml:space="preserve">
+    <value>ရှာဖွေရန်</value>
+  </data>
+  <data name="Submit" xml:space="preserve">
+    <value>တင်သွင်းရန်</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>ပယ်ဖျက်ရန်</value>
+  </data>
+  <data name="Save" xml:space="preserve">
+    <value>သိမ်းဆည်းရန်</value>
+  </data>
+  <data name="Delete" xml:space="preserve">
+    <value>ဖျက်ရန်</value>
+  </data>
+  <data name="Edit" xml:space="preserve">
+    <value>ပြင်ဆင်ရန်</value>
+  </data>
+  <data name="View" xml:space="preserve">
+    <value>ကြည့်ရှုရန်</value>
+  </data>
+  <data name="Back" xml:space="preserve">
+    <value>နောက်သို့</value>
+  </data>
+  <data name="Next" xml:space="preserve">
+    <value>ရှေ့သို့</value>
+  </data>
+  <data name="Previous" xml:space="preserve">
+    <value>အရင်</value>
+  </data>
+  <data name="Quiz" xml:space="preserve">
+    <value>စစ်ဆေးမှု</value>
+  </data>
+  <data name="Quizzes" xml:space="preserve">
+    <value>စစ်ဆေးမှုများ</value>
+  </data>
+  <data name="Assignment" xml:space="preserve">
+    <value>တာဝန်</value>
+  </data>
+  <data name="Assignments" xml:space="preserve">
+    <value>တာဝန်များ</value>
+  </data>
+  <data name="Payment" xml:space="preserve">
+    <value>ငွေပေးချေမှု</value>
+  </data>
+  <data name="Payments" xml:space="preserve">
+    <value>ငွေပေးချေမှုများ</value>
+  </data>
+  <data name="Enrollment" xml:space="preserve">
+    <value>စာရင်းသွင်းမှု</value>
+  </data>
+  <data name="Enrollments" xml:space="preserve">
+    <value>စာရင်းသွင်းမှုများ</value>
+  </data>
+  <data name="Users" xml:space="preserve">
+    <value>အသုံးပြုသူများ</value>
+  </data>
+  <data name="Email" xml:space="preserve">
+    <value>အီးမေးလ်</value>
+  </data>
+  <data name="Password" xml:space="preserve">
+    <value>စကားဝှက်</value>
+  </data>
+  <data name="ConfirmPassword" xml:space="preserve">
+    <value>စကားဝှက်အတည်ပြုရန်</value>
+  </data>
+  <data name="FullName" xml:space="preserve">
+    <value>အမည်အပြည့်အစုံ</value>
+  </data>
+  <data name="ForgotPassword" xml:space="preserve">
+    <value>စကားဝှက်မေ့နေပါသလား?</value>
+  </data>
+  <data name="ResetPassword" xml:space="preserve">
+    <value>စကားဝှက်ပြန်လည်သတ်မှတ်ရန်</value>
+  </data>
+  <data name="RememberMe" xml:space="preserve">
+    <value>မှတ်ထားပါ</value>
+  </data>
+  <data name="NoAccount" xml:space="preserve">
+    <value>အကောင့်မရှိသေးဘူးလား?</value>
+  </data>
+  <data name="AlreadyHaveAccount" xml:space="preserve">
+    <value>အကောင့်ရှိပြီးသားလား?</value>
+  </data>
+  <data name="CreateAccount" xml:space="preserve">
+    <value>အကောင့်ဖန်တီးရန်</value>
+  </data>
+  <data name="SignIn" xml:space="preserve">
+    <value>ဝင်ရောက်ရန်</value>
+  </data>
+  <data name="SignUp" xml:space="preserve">
+    <value>စာရင်းသွင်းရန်</value>
+  </data>
+  <data name="WelcomeBack" xml:space="preserve">
+    <value>ပြန်လည်ကြိုဆိုပါသည်!</value>
+  </data>
+  <data name="StartLearning" xml:space="preserve">
+    <value>ယနေ့စတင်သင်ယူပါ</value>
+  </data>
+  <data name="CourseDetails" xml:space="preserve">
+    <value>သင်တန်းအသေးစိတ်</value>
+  </data>
+  <data name="CourseContent" xml:space="preserve">
+    <value>သင်တန်းအကြောင်းအရာ</value>
+  </data>
+  <data name="ThisCourseIncludes" xml:space="preserve">
+    <value>ဤသင်တန်းတွင်ပါဝင်သည်</value>
+  </data>
+  <data name="VideoLessons" xml:space="preserve">
+    <value>ဗီဒီယိုသင်ခန်းစာများ</value>
+  </data>
+  <data name="TextLessons" xml:space="preserve">
+    <value>စာသားသင်ခန်းစာများ</value>
+  </data>
+  <data name="CertificateOfCompletion" xml:space="preserve">
+    <value>ပြီးဆုံးမှုလက်မှတ်</value>
+  </data>
+  <data name="LifetimeAccess" xml:space="preserve">
+    <value>တစ်သက်တာဝင်ရောက်ခွင့်</value>
+  </data>
+  <data name="LoginToEnroll" xml:space="preserve">
+    <value>စာရင်းသွင်းရန် ဝင်ရောက်ပါ</value>
+  </data>
+  <data name="EnrollFree" xml:space="preserve">
+    <value>အခမဲ့စာရင်းသွင်းရန်</value>
+  </data>
+  <data name="TotalRevenue" xml:space="preserve">
+    <value>စုစုပေါင်းဝင်ငွေ</value>
+  </data>
+  <data name="ActiveStudents" xml:space="preserve">
+    <value>တက်ကြွသောကျောင်းသားများ</value>
+  </data>
+  <data name="PendingReviews" xml:space="preserve">
+    <value>ဆိုင်းငံ့ထားသောသုံးသပ်ချက်များ</value>
+  </data>
+  <data name="RecentEnrollments" xml:space="preserve">
+    <value>မကြာသေးမီကစာရင်းသွင်းမှုများ</value>
+  </data>
+  <data name="RecentUsers" xml:space="preserve">
+    <value>မကြာသေးမီကအသုံးပြုသူများ</value>
+  </data>
+  <data name="QuickActions" xml:space="preserve">
+    <value>အမြန်လုပ်ဆောင်ချက်များ</value>
+  </data>
+  <data name="AddNewCourse" xml:space="preserve">
+    <value>သင်တန်းအသစ်ထည့်ရန်</value>
+  </data>
+  <data name="ManageUsers" xml:space="preserve">
+    <value>အသုံးပြုသူများစီမံရန်</value>
+  </data>
+  <data name="ManageCourses" xml:space="preserve">
+    <value>သင်တန်းများစီမံရန်</value>
+  </data>
+  <data name="ReviewAssignments" xml:space="preserve">
+    <value>တာဝန်များသုံးသပ်ရန်</value>
+  </data>
+  <data name="ViewAll" xml:space="preserve">
+    <value>အားလုံးကြည့်ရန်</value>
+  </data>
+</root>
