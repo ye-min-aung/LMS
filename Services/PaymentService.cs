@@ -162,7 +162,7 @@ public class PaymentService : IPaymentService
                     merch_code = _merchantId,
                     appid = _apiKey,
                     trade_type = "WEB",
-                    title = payment.Enrollment?.Course?.Title ?? "Course Enrollment",
+                    title = payment.Enrollment?.Course?.Title_EN ?? "Course Enrollment",
                     total_amount = ((int)(payment.Amount * 100)).ToString(), // Amount in smallest unit
                     trans_currency = "MMK",
                     callback_url = _returnUrl,
