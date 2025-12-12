@@ -34,21 +34,49 @@
                         </div>
                     </div>
                 }
-                else if (Model.Lesson?.LessonType == "Text")
+                else if (Model.Lesson?.LessonType == "Video" && !string.IsNullOrEmpty(Model.Lesson.ContentURL))
+                {
+                    <!-- Direct video URL (YouTube, Vimeo, or direct link) -->
+                    @if (Model.Lesson.ContentURL.Contains("youtube.com") || Model.Lesson.ContentURL.Contains("youtu.be"))
+                    {
+                        var videoId = Model.Lesson.ContentURL.Contains("youtu.be") 
+                            ? Model.Lesson.ContentURL.Split('/').Last()
+                            : System.Web.HttpUtility.ParseQueryString(new Uri(Model.Lesson.ContentURL).Query)["v"];
+                        <div class="ratio ratio-16x9">
+                            <iframe src="https://www.youtube.com/embed/@videoId" allowfullscreen></iframe>
+                        </div>
+                    }
+                    else if (Model.Lesson.ContentURL.Contains("vimeo.com"))
+                    {
+                        var vimeoId = Model.Lesson.ContentURL.Split('/').Last();
+                        <div class="ratio ratio-16x9">
+                            <iframe src="https://player.vimeo.com/video/@vimeoId" allowfullscreen></iframe>
+                        </div>
+                    }
+                    else
+                    {
+                        <video id="lessonVideo" class="video-player w-100" controls>
+                            <source src="@Model.Lesson.ContentURL" type="video/mp4">
+                            Your browser doesn't support HTML5 video.
+                        </video>
+                    }
+                }
+                else if (Model.Lesson?.LessonType == "Text" || !string.IsNullOrEmpty(Model.Lesson?.GetContent()))
                 {
                     <div class="text-lesson-content">
                         <div class="card">
                             <div class="card-body">
-                                @Html.Raw(Model.Lesson.GetContent())
+                                @Html.Raw(Model.Lesson?.GetContent() ?? "<p>No content available for this lesson.</p>")
                             </div>
                         </div>
                     </div>
                 }
                 else
                 {
-                    <div class="alert alert-warning">
-                        <i class="fas fa-exclamation-triangle"></i>
-                        Video content is not available or you don't have access to this lesson.
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Lesson: @Model.Lesson?.GetTitle()</strong>
+                        <p class="mb-0 mt-2">This lesson content is being prepared. Please check back later or contact the administrator.</p>
                     </div>
                 }
             </div>

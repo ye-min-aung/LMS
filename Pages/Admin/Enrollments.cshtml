@@ -1,0 +1,115 @@
+@page
+@model LMSPlatform.Pages.Admin.EnrollmentsModel
+@{
+    ViewData["Title"] = "Manage Enrollments";
+}
+
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="bi bi-person-plus me-2"></i>Manage Enrollments</h2>
+    </div>
+
+    @if (TempData["Message"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show">
+            @TempData["Message"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <!-- Manual Enrollment Form -->
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0"><i class="bi bi-plus-circle me-2"></i>Enroll User Manually</h5>
+        </div>
+        <div class="card-body">
+            <form method="post" asp-page-handler="Enroll">
+                <div class="row g-3">
+                    <div class="col-md-5">
+                        <label class="form-label">Select User</label>
+                        <select asp-for="SelectedUserId" asp-items="Model.Users" class="form-select">
+                            <option value="">-- Select User --</option>
+                        </select>
+                    </div>
+                    <div class="col-md-5">
+                        <label class="form-label">Select Course</label>
+                        <select asp-for="SelectedCourseId" asp-items="Model.Courses" class="form-select">
+                            <option value="">-- Select Course --</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2 d-flex align-items-end">
+                        <button type="submit" class="btn btn-success w-100">
+                            <i class="bi bi-check-lg me-1"></i>Enroll
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Enrollments List -->
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0"><i class="bi bi-list-ul me-2"></i>All Enrollments</h5>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>User</th>
+                            <th>Course</th>
+                            <th>Status</th>
+                            <th>Enrolled Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var enrollment in Model.Enrollments)
+                        {
+                            <tr>
+                                <td>
+                                    <strong>@enrollment.User?.FullName</strong><br>
+                                    <small class="text-muted">@enrollment.User?.Email</small>
+                                </td>
+                                <td>@enrollment.Course?.Title_EN</td>
+                                <td>
+                                    @if (enrollment.Status == LMSPlatform.Models.EnrollmentStatus.Approved)
+                                    {
+                                        <span class="badge bg-success">Approved</span>
+                                    }
+                                    else if (enrollment.Status == LMSPlatform.Models.EnrollmentStatus.PendingPayment)
+                                    {
+                                        <span class="badge bg-warning">Pending Payment</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">@enrollment.Status</span>
+                                    }
+                                </td>
+                                <td>@enrollment.EnrollmentDate.ToString("dd MMM yyyy")</td>
+                                <td>
+                                    <form method="post" asp-page-handler="Revoke" 
+                                          onsubmit="return confirm('Are you sure you want to revoke this enrollment?');">
+                                        <input type="hidden" name="enrollmentId" value="@enrollment.EnrollmentID" />
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">
+                                            <i class="bi bi-x-circle"></i> Revoke
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                        @if (!Model.Enrollments.Any())
+                        {
+                            <tr>
+                                <td colspan="5" class="text-center py-4 text-muted">
+                                    No enrollments yet
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
