@@ -54,14 +54,20 @@
                                                             }
                                                             @lesson.GetTitle()
                                                         </div>
-                                                        <form method="post" asp-page-handler="DeleteLesson" class="d-inline">
-                                                            <input type="hidden" name="courseId" value="@Model.Course.CourseID" />
-                                                            <input type="hidden" name="lessonId" value="@lesson.LessonID" />
-                                                            <button type="submit" class="btn btn-sm btn-outline-danger"
-                                                                    onclick="return confirm('Delete this lesson?')">
-                                                                <i class="fas fa-trash"></i>
-                                                            </button>
-                                                        </form>
+                                                        <div>
+                                                            <a href="/Admin/Courses/Lesson/@lesson.LessonID" 
+                                                               class="btn btn-sm btn-outline-primary me-1" title="Add Quiz/Assignment">
+                                                                <i class="fas fa-cog"></i>
+                                                            </a>
+                                                            <form method="post" asp-page-handler="DeleteLesson" class="d-inline">
+                                                                <input type="hidden" name="courseId" value="@Model.Course.CourseID" />
+                                                                <input type="hidden" name="lessonId" value="@lesson.LessonID" />
+                                                                <button type="submit" class="btn btn-sm btn-outline-danger"
+                                                                        onclick="return confirm('Delete this lesson?')">
+                                                                    <i class="fas fa-trash"></i>
+                                                                </button>
+                                                            </form>
+                                                        </div>
                                                     </li>
                                                 }
                                             </ul>

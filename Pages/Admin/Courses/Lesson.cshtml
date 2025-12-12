@@ -1,0 +1,205 @@
+@page "/Admin/Courses/Lesson/{id:int}"
+@model LMSPlatform.Pages.Admin.Courses.LessonModel
+@{
+    ViewData["Title"] = "Manage Lesson";
+}
+
+<div class="page-header">
+    <div class="container">
+        <h1><i class="fas fa-book-open me-3"></i>Manage Lesson</h1>
+        <p class="mb-0">@Model.Lesson?.GetTitle() - Add quizzes and assignments</p>
+    </div>
+</div>
+
+<div class="container py-4">
+    @if (TempData["Message"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show">
+            @TempData["Message"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <div class="mb-3">
+        <a href="/Admin/Courses/Modules/@Model.Lesson?.Module.CourseID" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Back to Modules
+        </a>
+    </div>
+
+    <div class="row">
+        <!-- Quiz Section -->
+        <div class="col-lg-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-question-circle me-2"></i>Quiz</h5>
+                </div>
+                <div class="card-body">
+                    @if (Model.Lesson?.Quiz != null)
+                    {
+                        <div class="mb-3">
+                            <strong>@Model.Lesson.Quiz.Title</strong>
+                            <span class="badge bg-info ms-2">Pass: @Model.Lesson.Quiz.PassingScore%</span>
+                            <form method="post" asp-page-handler="DeleteQuiz" class="d-inline float-end">
+                                <input type="hidden" name="lessonId" value="@Model.Lesson.LessonID" />
+                                <input type="hidden" name="quizId" value="@Model.Lesson.Quiz.QuizID" />
+                                <button type="submit" class="btn btn-sm btn-outline-danger" 
+                                        onclick="return confirm('Delete this quiz and all questions?')">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </form>
+                        </div>
+
+                        <!-- Questions List -->
+                        @if (Model.Lesson.Quiz.Questions.Any())
+                        {
+                            <div class="list-group mb-3">
+                                @foreach (var question in Model.Lesson.Quiz.Questions)
+                                {
+                                    <div class="list-group-item">
+                                        <div class="d-flex justify-content-between">
+                                            <strong>@question.QuestionText</strong>
+                                            <form method="post" asp-page-handler="DeleteQuestion" class="d-inline">
+                                                <input type="hidden" name="lessonId" value="@Model.Lesson.LessonID" />
+                                                <input type="hidden" name="questionId" value="@question.QuestionID" />
+                                                <button type="submit" class="btn btn-sm btn-link text-danger p-0">
+                                                    <i class="fas fa-times"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                        <ul class="mb-0 mt-2">
+                                            @foreach (var choice in question.AnswerChoices)
+                                            {
+                                                <li class="@(choice.IsCorrect ? "text-success fw-bold" : "")">
+                                                    @choice.ChoiceText @(choice.IsCorrect ? "✓" : "")
+                                                </li>
+                                            }
+                                        </ul>
+                                    </div>
+                                }
+                            </div>
+                        }
+
+                        <!-- Add Question Form -->
+                        <div class="card bg-light">
+                            <div class="card-body">
+                                <h6>Add Question</h6>
+                                <form method="post" asp-page-handler="AddQuestion">
+                                    <input type="hidden" name="lessonId" value="@Model.Lesson.LessonID" />
+                                    <input type="hidden" name="quizId" value="@Model.Lesson.Quiz.QuizID" />
+                                    <div class="mb-2">
+                                        <input type="text" name="questionText" class="form-control form-control-sm" 
+                                               placeholder="Question text" required>
+                                    </div>
+                                    <div class="mb-2">
+                                        <input type="text" name="answers" class="form-control form-control-sm" 
+                                               placeholder="Answer A" required>
+                                    </div>
+                                    <div class="mb-2">
+                                        <input type="text" name="answers" class="form-control form-control-sm" 
+                                               placeholder="Answer B" required>
+                                    </div>
+                                    <div class="mb-2">
+                                        <input type="text" name="answers" class="form-control form-control-sm" 
+                                               placeholder="Answer C">
+                                    </div>
+                                    <div class="mb-2">
+                                        <input type="text" name="answers" class="form-control form-control-sm" 
+                                               placeholder="Answer D">
+                                    </div>
+                                    <div class="mb-2">
+                                        <select name="correctAnswer" class="form-select form-select-sm">
+                                            <option value="0">A is correct</option>
+                                            <option value="1">B is correct</option>
+                                            <option value="2">C is correct</option>
+                                            <option value="3">D is correct</option>
+                                        </select>
+                                    </div>
+                                    <button type="submit" class="btn btn-sm btn-primary">
+                                        <i class="fas fa-plus me-1"></i>Add Question
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <!-- Create Quiz Form -->
+                        <form method="post" asp-page-handler="AddQuiz">
+                            <input type="hidden" name="lessonId" value="@Model.Lesson?.LessonID" />
+                            <div class="mb-3">
+                                <label class="form-label">Quiz Title</label>
+                                <input type="text" name="title" class="form-control" 
+                                       placeholder="e.g., Module 1 Quiz" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Passing Score (%)</label>
+                                <input type="number" name="passingScore" class="form-control" 
+                                       value="70" min="0" max="100" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-plus me-2"></i>Create Quiz
+                            </button>
+                        </form>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Assignment Section -->
+        <div class="col-lg-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="fas fa-file-upload me-2"></i>Assignment</h5>
+                </div>
+                <div class="card-body">
+                    @if (Model.Lesson?.Assignment != null)
+                    {
+                        <div class="mb-3">
+                            <strong>@Model.Lesson.Assignment.Title</strong>
+                            <span class="badge bg-info ms-2">Max: @Model.Lesson.Assignment.MaxScore pts</span>
+                            <form method="post" asp-page-handler="DeleteAssignment" class="d-inline float-end">
+                                <input type="hidden" name="lessonId" value="@Model.Lesson.LessonID" />
+                                <input type="hidden" name="assignmentId" value="@Model.Lesson.Assignment.AssignmentID" />
+                                <button type="submit" class="btn btn-sm btn-outline-danger"
+                                        onclick="return confirm('Delete this assignment?')">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </form>
+                        </div>
+                        <p class="text-muted">@Model.Lesson.Assignment.Description</p>
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            Students can submit files for this assignment. Review submissions in 
+                            <a href="/Admin/Assignments">Admin → Assignments</a>.
+                        </div>
+                    }
+                    else
+                    {
+                        <!-- Create Assignment Form -->
+                        <form method="post" asp-page-handler="AddAssignment">
+                            <input type="hidden" name="lessonId" value="@Model.Lesson?.LessonID" />
+                            <div class="mb-3">
+                                <label class="form-label">Assignment Title</label>
+                                <input type="text" name="title" class="form-control" 
+                                       placeholder="e.g., Project Submission" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Description</label>
+                                <textarea name="description" class="form-control" rows="3"
+                                          placeholder="Describe what students need to submit..."></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Max Score</label>
+                                <input type="number" name="maxScore" class="form-control" 
+                                       value="100" min="1" required>
+                            </div>
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-plus me-2"></i>Create Assignment
+                            </button>
+                        </form>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
