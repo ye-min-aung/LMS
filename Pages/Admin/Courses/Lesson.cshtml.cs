@@ -39,7 +39,7 @@ public class LessonModel : PageModel
         var lesson = await _context.Lessons.FindAsync(lessonId);
         if (lesson == null) return NotFound();
 
-        var quiz = new Quiz
+        var quiz = new Models.Quiz
         {
             LessonID = lessonId,
             Title = title,
@@ -61,8 +61,7 @@ public class LessonModel : PageModel
         var question = new Question
         {
             QuizID = quizId,
-            QuestionText = questionText,
-            QuestionType = "MultipleChoice"
+            QuestionText = questionText
         };
         _context.Questions.Add(question);
         await _context.SaveChangesAsync();
@@ -124,17 +123,16 @@ public class LessonModel : PageModel
         return RedirectToPage(new { id = lessonId });
     }
 
-    public async Task<IActionResult> OnPostAddAssignmentAsync(int lessonId, string title, string description, int maxScore)
+    public async Task<IActionResult> OnPostAddAssignmentAsync(int lessonId, string title, string? instructions)
     {
         var lesson = await _context.Lessons.FindAsync(lessonId);
         if (lesson == null) return NotFound();
 
-        var assignment = new Assignment
+        var assignment = new Models.Assignment
         {
             LessonID = lessonId,
             Title = title,
-            Description = description,
-            MaxScore = maxScore
+            Instructions = instructions
         };
         _context.Assignments.Add(assignment);
         await _context.SaveChangesAsync();

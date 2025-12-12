@@ -156,7 +156,7 @@
                     {
                         <div class="mb-3">
                             <strong>@Model.Lesson.Assignment.Title</strong>
-                            <span class="badge bg-info ms-2">Max: @Model.Lesson.Assignment.MaxScore pts</span>
+                            <span class="badge bg-info ms-2">Max: @((Model.Lesson.Assignment.MaxFileSize / 1024 / 1024))MB</span>
                             <form method="post" asp-page-handler="DeleteAssignment" class="d-inline float-end">
                                 <input type="hidden" name="lessonId" value="@Model.Lesson.LessonID" />
                                 <input type="hidden" name="assignmentId" value="@Model.Lesson.Assignment.AssignmentID" />
@@ -166,7 +166,7 @@
                                 </button>
                             </form>
                         </div>
-                        <p class="text-muted">@Model.Lesson.Assignment.Description</p>
+                        <p class="text-muted">@Model.Lesson.Assignment.Instructions</p>
                         <div class="alert alert-info">
                             <i class="fas fa-info-circle me-2"></i>
                             Students can submit files for this assignment. Review submissions in 
@@ -184,14 +184,9 @@
                                        placeholder="e.g., Project Submission" required>
                             </div>
                             <div class="mb-3">
-                                <label class="form-label">Description</label>
-                                <textarea name="description" class="form-control" rows="3"
+                                <label class="form-label">Instructions</label>
+                                <textarea name="instructions" class="form-control" rows="3"
                                           placeholder="Describe what students need to submit..."></textarea>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">Max Score</label>
-                                <input type="number" name="maxScore" class="form-control" 
-                                       value="100" min="1" required>
                             </div>
                             <button type="submit" class="btn btn-success">
                                 <i class="fas fa-plus me-2"></i>Create Assignment
